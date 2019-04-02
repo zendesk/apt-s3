@@ -15,7 +15,7 @@
 
 The only requirement for `apt-s3` is the `ca-certificates` package and its dependencies.
 
-Installation is as easy as downloading the binary or deb package from our [releases](releases) page.
+Installation is as easy as downloading the binary or deb package from our [releases](https://github.com/zendesk/apt-s3/releases) page.
 
 ### Package Installation
 
