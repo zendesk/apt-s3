@@ -1,0 +1,23 @@
+name: "apt-s3"
+arch: "amd64"
+platform: "linux"
+version: "${VERSION}"
+section: "default"
+priority: "extra"
+conflicts:
+- apt-transport-s3
+replaces:
+- apt-transport-s3
+provides:
+- apt-s3
+depends:
+- ca-certificates
+maintainer: "Rob Bayerl <rbayerl@zendesk.com>"
+vendor: "Zendesk, Inc."
+description: |
+  apt transport method for repositories hosted in S3.
+homepage: "https://github.com/rbayerl/apt-s3"
+license: "MIT"
+bindir: "/usr/lib/apt/methods"
+files:
+  ./apt-s3: "/usr/lib/apt/methods/s3"
