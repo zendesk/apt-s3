@@ -34,7 +34,8 @@ func main() {
 		} else {
 			filename, err := m.Downloader.DownloadFile(*downloadUri, *downloadPath)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 			fmt.Printf("Downloaded %s\n", filename)
 			os.Exit(0)
