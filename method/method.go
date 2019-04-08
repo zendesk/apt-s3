@@ -115,7 +115,7 @@ func (m *Method) UriStart(lines []string) error {
 // understands
 func (m *Method) handleError(uri string, err error) {
 	fmt.Printf("400 URI Failure\nMessage: %s\nURI: %s\n", strings.TrimRight(fmt.Sprintln(err), "\n"), uri)
-	panic(err)
+	os.Exit(1)
 }
 
 // Start watches os.Stdin for a "600 URI Acquire" message from apt which
