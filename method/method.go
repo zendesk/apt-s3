@@ -42,24 +42,24 @@ func (m *Method) calculateHash(h hash.Hash, f []byte) (string, error) {
 func (m *Method) calculateHashes(filename string) (string, string, string, string, error) {
 	f, err := ioutil.ReadFile(filename)
 	if err != nil {
-	  return "", "", "", "", err
+		return "", "", "", "", err
 	}
 
 	md5h, err := m.calculateHash(md5.New(), f)
 	if err != nil {
-	  return "", "", "", "", err
+		return "", "", "", "", err
 	}
 	sha1h, err := m.calculateHash(sha1.New(), f)
 	if err != nil {
-	  return "", "", "", "", err
+		return "", "", "", "", err
 	}
 	sha256h, err := m.calculateHash(sha256.New(), f)
 	if err != nil {
-	  return "", "", "", "", err
+		return "", "", "", "", err
 	}
 	sha512h, err := m.calculateHash(sha512.New(), f)
 	if err != nil {
-	  return "", "", "", "", err
+		return "", "", "", "", err
 	}
 
 	return md5h, sha1h, sha256h, sha512h, nil

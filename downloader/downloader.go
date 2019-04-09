@@ -19,8 +19,8 @@ import (
 // Downloader tracks the region and Session and only recreates the Session
 // if the region has changed
 type Downloader struct {
-	region     string
-	sess       *session.Session
+	region string
+	sess   *session.Session
 }
 
 func New() *Downloader {
@@ -30,59 +30,59 @@ func New() *Downloader {
 
 // getValue parses a string and returns the value assigned to a key
 func (d *Downloader) getValue(line string) string {
-    splitLine := strings.Split(line, " = ")
-    return(splitLine[len(splitLine)-1])
+	splitLine := strings.Split(line, " = ")
+	return (splitLine[len(splitLine)-1])
 }
 
 // credentialsFromFile loads AWS credentials from a non-standard path
 func (d *Downloader) credentialsFromFile(fileName string) (string, string, string, error) {
-    var accessKey, secretKey, token string
+	var accessKey, secretKey, token string
 
-    file, err := os.Open(fileName)
-    if err != nil {
+	file, err := os.Open(fileName)
+	if err != nil {
 		return "", "", "", err
-    }
-    defer file.Close()
+	}
+	defer file.Close()
 
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        if strings.Contains(scanner.Text(), "aws_access_key_id") {
-            accessKey = d.getValue(scanner.Text())
-        } else if strings.Contains(scanner.Text(), "aws_secret_access_key") {
-            secretKey = d.getValue(scanner.Text())
-        } else if strings.Contains(scanner.Text(), "aws_session_token") {
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "aws_access_key_id") {
+			accessKey = d.getValue(scanner.Text())
+		} else if strings.Contains(scanner.Text(), "aws_secret_access_key") {
+			secretKey = d.getValue(scanner.Text())
+		} else if strings.Contains(scanner.Text(), "aws_session_token") {
 			token = d.getValue(scanner.Text())
 		}
-    }
-    if err := scanner.Err(); err != nil {
+	}
+	if err := scanner.Err(); err != nil {
 		return "", "", "", err
-    }
+	}
 
-    return accessKey, secretKey, token, nil
+	return accessKey, secretKey, token, nil
 }
 
 // loadCredentials sets up a Session using credentials found in /etc/apt/s3creds
 // or using the default configuration supported by AWS if /etc/apt/s3creds does
 // not exist
 func (d *Downloader) loadCredentials(region string) (*session.Session, error) {
-    var config aws.Config
-    var sess *session.Session
+	var config aws.Config
+	var sess *session.Session
 
-    if _, err := os.Stat("/etc/apt/s3creds"); err == nil {
-        accessKey, secretKey, token, err := d.credentialsFromFile("/etc/apt/s3creds")
+	if _, err := os.Stat("/etc/apt/s3creds"); err == nil {
+		accessKey, secretKey, token, err := d.credentialsFromFile("/etc/apt/s3creds")
 		if err != nil {
 			return nil, err
 		}
-        config = aws.Config{
-            Region:      aws.String(region),
-            Credentials: credentials.NewStaticCredentials(accessKey, secretKey, token),
-        }
-    } else if os.IsNotExist(err) {
-        config = aws.Config{Region: aws.String(region),}
-    }
-    sess, err := session.NewSession(&config)
+		config = aws.Config{
+			Region:      aws.String(region),
+			Credentials: credentials.NewStaticCredentials(accessKey, secretKey, token),
+		}
+	} else if os.IsNotExist(err) {
+		config = aws.Config{Region: aws.String(region)}
+	}
+	sess, err := session.NewSession(&config)
 
-    return sess, err
+	return sess, err
 }
 
 // parseUri takes an S3 URI s3://<bucket>.s3-<region>.amazonaws.com/key/file
