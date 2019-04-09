@@ -68,3 +68,7 @@ Use the Makefile to build the binary and .deb package (requires [nfpm](https://g
 ```bash
 $ make
 ```
+
+## License
+
+Use of this software is subject to important terms and conditions as set forth in the [LICENSE](LICENSE) file.
