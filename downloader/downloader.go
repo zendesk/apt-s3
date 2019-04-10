@@ -46,11 +46,12 @@ func (d *Downloader) credentialsFromFile(fileName string) (string, string, strin
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "aws_access_key_id") {
+		switch {
+		case strings.Contains(scanner.Text(), "aws_access_key_id"):
 			accessKey = d.getValue(scanner.Text())
-		} else if strings.Contains(scanner.Text(), "aws_secret_access_key") {
+		case strings.Contains(scanner.Text(), "aws_secret_access_key"):
 			secretKey = d.getValue(scanner.Text())
-		} else if strings.Contains(scanner.Text(), "aws_session_token") {
+		case strings.Contains(scanner.Text(), "aws_session_token"):
 			token = d.getValue(scanner.Text())
 		}
 	}
@@ -87,7 +88,7 @@ func (d *Downloader) loadCredentials(region string) (*session.Session, error) {
 
 // parseUri takes an S3 URI s3://<bucket>.s3-<region>.amazonaws.com/key/file
 // and returns the bucket, region, key, and filename
-func (d *Downloader) parseUri(keyString string) (string, string, string, string) {
+func (d *Downloader) parseURI(keyString string) (string, string, string, string) {
 	var region string
 	ss := strings.Split(keyString, "/")
 	bucketSs := strings.Split(ss[2], ".")
@@ -108,7 +109,7 @@ func (d *Downloader) parseUri(keyString string) (string, string, string, string)
 // size in the format expected by apt
 func (d *Downloader) GetFileAttributes(s3Uri string) (string, int64, error) {
 	var err error
-	bucket, region, key, _ := d.parseUri(s3Uri)
+	bucket, region, key, _ := d.parseURI(s3Uri)
 
 	if d.region != region {
 		d.region = region
@@ -137,7 +138,7 @@ func (d *Downloader) GetFileAttributes(s3Uri string) (string, int64, error) {
 // path
 func (d *Downloader) DownloadFile(s3Uri string, path string) (string, error) {
 	var err error
-	bucket, region, key, filename := d.parseUri(s3Uri)
+	bucket, region, key, filename := d.parseURI(s3Uri)
 	if path != "" {
 		filename = path
 	}

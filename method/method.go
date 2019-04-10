@@ -12,6 +12,7 @@ import (
 	"hash"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -114,8 +115,7 @@ func (m *Method) UriStart(lines []string) error {
 // handleError sends an error message to os.Stdout in a format which apt
 // understands
 func (m *Method) handleError(uri string, err error) {
-	fmt.Printf("400 URI Failure\nMessage: %s\nURI: %s\n", strings.TrimRight(fmt.Sprintln(err), "\n"), uri)
-	os.Exit(1)
+	log.Fatalf("400 URI Failure\nMessage: %s\nURI: %s\n", strings.TrimRight(fmt.Sprintln(err), "\n"), uri)
 }
 
 // Start watches os.Stdin for a "600 URI Acquire" message from apt which
