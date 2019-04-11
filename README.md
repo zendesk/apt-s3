@@ -69,6 +69,15 @@ Use the Makefile to build the binary and .deb package (requires [nfpm](https://g
 $ make
 ```
 
+## Contributing
+
+Improvements are always welcome. Please follow these steps to contribute:
+
+1. Fork repo
+2. Submit a Pull Request with a detailed explanation of changes
+3. Receive a :+1: from a core team member
+4. Core team will merge your changes
+
 ## License
 
 Use of this software is subject to important terms and conditions as set forth in the [LICENSE](LICENSE) file.

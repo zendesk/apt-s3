@@ -1,0 +1,10 @@
+language: go
+branches:
+  only: [master]
+go:
+- "1.11"
+- "1.12"
+before_install: go get ./...
+script: go test -v ./...
+notifications:
+  email: false
