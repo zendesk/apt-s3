@@ -30,10 +30,11 @@ func TestSendCapabilities(t *testing.T) {
 }
 
 func TestFindLine(t *testing.T) {
-	var lines []string
-	lines = append(lines, "Not this line")
-	lines = append(lines, "Foo: bar")
-	lines = append(lines, "Not this line either")
+	lines := []string{
+		"Not this line",
+		"Foo: bar",
+		"Not this line either",
+	}
 
 	m := &Method{}
 	key := m.findLine("Foo", lines)
