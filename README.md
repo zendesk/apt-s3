@@ -69,6 +69,23 @@ Use the Makefile to build the binary and .deb package (requires [nfpm](https://g
 $ make
 ```
 
+## Releasing a New Version
+
+To release a new version you will need a few things:
+
+1. Write access to this repo
+2. [A personal access token](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line)
+3. [nfpm](https://github.com/goreleaser/nfpm) installed and in the `$PATH`
+
+Once everything is set up follow these steps to create a release and upload assets:
+
+```bash
+export GITHUB_TOKEN=<your personal access token>
+# bumping the version programatically can be easily done with `awk`
+export VERSION=$(git describe --tags | awk -F. -v OFS=. '{ $3++ } 1') # use $1 for major/$2 for minor/$3 for patch
+make VERSION=$VERSION release
+```
+
 ## Contributing
 
 Improvements are always welcome. Please follow these steps to contribute:
