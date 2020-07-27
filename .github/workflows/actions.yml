@@ -3,7 +3,7 @@ on: [push]
 jobs:
   main:
     name: go-lang-matrix
-    runs-on: zendesk-stable
+    runs-on: ubuntu-latest
     env:
       APP_ENV: test
       GO111MODULE: on
