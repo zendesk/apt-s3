@@ -1,0 +1,30 @@
+name: repo-checks
+on: [push]
+jobs:
+  main:
+    name: go-lang-matrix
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: test
+      GO111MODULE: on
+      GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        go:
+          - "1.12"
+          - "1.11"
+    steps:
+    - uses: zendesk/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: zendesk/setup-go@v2
+      with:
+        go-version: ${{ matrix.go }}
+    - name: test go ${{ matrix.go }}
+      run: |
+        curl -sSLO https://github.com/goreleaser/nfpm/releases/download/v0.11.0/nfpm_0.11.0_Linux_x86_64.tar.gz
+        mkdir bin
+        tar xfz nfpm_0.11.0_Linux_x86_64.tar.gz -C bin
+        export PATH=./bin:$PATH
+        make
+

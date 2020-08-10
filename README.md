@@ -1,4 +1,5 @@
 # apt-s3
+![repo-checks](https://github.com/zendesk/apt-s3/workflows/repo-checks/badge.svg)
 
 `apt-s3` is an [APT Method Interface](http://www.fifi.org/doc/libapt-pkg-doc/method.html/) written in Go to use a private S3 bucket as an `apt` repository on Debian based systems. Similar projects exist, but they all have their caveats:
   * Many are completely unmaintained
