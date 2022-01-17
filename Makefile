@@ -1,33 +1,41 @@
 VERSION := $(shell git describe --tags)
 LDFLAGS := -ldflags='-X "main.Version=$(VERSION)"'
 
-all: test
+ARCHITECTURES = amd64 arm64
+BUILD_TARGETS = $(patsubst %, apt-s3_$(VERSION)_%, $(ARCHITECTURES))
+PACKAGE_TARGETS = $(patsubst %, apt-s3_$(VERSION)_%.deb, $(ARCHITECTURES))
 
-apt-s3: build-deps
-	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $@
+all: test $(PACKAGE_TARGETS)
 
-apt-s3_$(VERSION)_amd64.deb: apt-s3
-	VERSION=$(VERSION) nfpm pkg --target $@
+$(BUILD_TARGETS): apt-s3_$(VERSION)_% : build-deps
+	GOOS=linux GOARCH=$* go build $(LDFLAGS) -o $@
+
+$(PACKAGE_TARGETS): apt-s3_$(VERSION)_%.deb : apt-s3_$(VERSION)_%
+	cp apt-s3_$(VERSION)_$* apt-s3 # Workaround, nfpm does not support env vars in contents
+	VERSION=$(VERSION) ARCH=$* nfpm pkg --target $@
+	rm apt-s3
 
 build-deps:
 	go get ./...
 
 clean:
-	rm -f apt-s3 apt-s3_*_amd64.deb
+	rm -f apt-s3_* apt-s3_*.deb
 
-release: tag
+release: $(PACKAGE_TARGETS) tag
 ifndef GITHUB_TOKEN
 	$(error GITHUB_TOKEN is not set!)
 endif
 	$(eval URL := $(shell curl -sS -H "Authorization: token $$GITHUB_TOKEN" -H "Content-Type: application/json" -X POST -d '{"tag_name":"$(VERSION)","name":"v$(VERSION)"}' https://api.github.com/repos/zendesk/apt-s3/releases | awk -F\" /assets_url/'{sub(/api/, "uploads", $$4); print $$4 }'))
-	curl -sS -H "Authorization: token $$GITHUB_TOKEN" -X POST -F "data=@apt-s3" $(URL)?name=apt-s3 >/dev/null
-	curl -sS -H "Authorization: token $$GITHUB_TOKEN" -X POST -F "data=@apt-s3_$(VERSION)_amd64.deb" $(URL)?name=apt-s3_$(VERSION)_amd64.deb >/dev/null
+	$(foreach arch,$(ARCHITECTURES),\
+		$(shell curl -sS -H "Authorization: token $$GITHUB_TOKEN" -H "Content-Type: application/octet-stream" -X POST --data-binary "@apt-s3_$(VERSION)_$(arch)" $(URL)?name=apt-s3_$(VERSION)_$(arch) >/dev/null)\
+		$(shell curl -sS -H "Authorization: token $$GITHUB_TOKEN" -H "Content-Type: application/octet-stream" -X POST --data-binary "@apt-s3_$(VERSION)_$(arch).deb" $(URL)?name=apt-s3_$(VERSION)_$(arch).deb >/dev/null)\
+	)
 
-tag: apt-s3_$(VERSION)_amd64.deb
+tag:
 	git tag $(VERSION)
 	git push --tags
 
-test: apt-s3_$(VERSION)_amd64.deb
+test: build-deps
 	go test -v ./...
 
 .PHONY: all build-deps clean release tag test
