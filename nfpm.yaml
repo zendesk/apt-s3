@@ -18,7 +18,11 @@ description: |
   apt transport method for repositories hosted in S3.
 homepage: "https://github.com/rbayerl/apt-s3"
 license: "Apache-2.0"
-bindir: "/usr/lib/apt/methods"
-files:
-  ./apt-s3: "/usr/lib/apt/methods/s3"
-  ./LICENSE: "/usr/share/doc/apt-s3/copyright"
+contents:
+  - src: apt-s3
+    dst: /usr/local/bin/apt-s3
+  - src: /usr/local/bin/apt-s3
+    dst: /usr/lib/apt/methods/s3
+    type: symlink
+  - src: LICENSE
+    dst: /usr/share/doc/apt-s3/copyright
