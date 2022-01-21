@@ -8,7 +8,7 @@ PACKAGE_TARGETS = $(patsubst %, apt-s3_$(VERSION)_%.deb, $(ARCHITECTURES))
 all: test $(PACKAGE_TARGETS)
 
 $(BUILD_TARGETS): apt-s3_$(VERSION)_% : build-deps
-	GOOS=linux GOARCH=$* go build $(LDFLAGS) -o $@
+	GOOS=linux GOARCH=$* go1.12.17 build $(LDFLAGS) -o $@
 
 $(PACKAGE_TARGETS): apt-s3_$(VERSION)_%.deb : apt-s3_$(VERSION)_%
 	cp apt-s3_$(VERSION)_$* apt-s3 # Workaround, nfpm does not support env vars in contents
@@ -16,7 +16,7 @@ $(PACKAGE_TARGETS): apt-s3_$(VERSION)_%.deb : apt-s3_$(VERSION)_%
 	rm apt-s3
 
 build-deps:
-	go get ./...
+	go1.12.17 get ./...
 
 clean:
 	rm -f apt-s3_* apt-s3_*.deb
