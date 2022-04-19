@@ -24,6 +24,13 @@ func TestParseURI(t *testing.T) {
 			key:      "path/to/file",
 			filename: "file",
 		},
+		{
+			uri:      "s3://my.bucket.s3.amazonaws.com/path/to/file",
+			bucket:   "my.bucket",
+			region:   "us-east-1",
+			key:      "path/to/file",
+			filename: "file",
+		},
 	}
 
 	d := &Downloader{}
