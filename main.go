@@ -8,7 +8,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/zendesk/apt-s3/method"
+	"github.com/abrener5735/apt-s3/method"
 )
 
 var (
