@@ -50,7 +50,7 @@ func TestHandleError(t *testing.T) {
 		return
 	}
 	r, w, _ := os.Pipe()
-	cmd := exec.Command("go", "test", "github.com/zendesk/apt-s3/method", "-test.run=TestHandleError")
+	cmd := exec.Command("go", "test", "github.com/abrener5735/apt-s3/method", "-test.run=TestHandleError")
 	cmd.Env = append(os.Environ(), "TEST_EXIT=1")
 	cmd.Stdout = w
 	cmd.Run()
