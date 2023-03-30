@@ -38,7 +38,7 @@ Simply create an apt list file in the proper format to start using `apt-s3` with
 export BUCKET_NAME=my-s3-bucket
 export BUCKET_REGION=us-east-1
 
-echo "deb s3://${BUCKET_NAME}.s3-${BUCKET_REGION}.amazonaws.com/ stable main" > /etc/apt/source.list.d/s3bucket.list"
+echo "deb s3://${BUCKET_NAME}.s3-${BUCKET_REGION}.amazonaws.com/ stable main" > /etc/apt/sources.list.d/s3bucket.list
 ```
 
 ### Credentials File
