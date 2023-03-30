@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"errors"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -15,6 +16,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
+
+var URIRegex = regexp.MustCompile("s3://(.*)\\.s3-?(.*)\\.amazonaws\\.com/(.*/(.*$))")
 
 // Downloader tracks the region and Session and only recreates the Session
 // if the region has changed
@@ -89,19 +92,15 @@ func (d *Downloader) loadCredentials(region string) (*session.Session, error) {
 // parseUri takes an S3 URI s3://<bucket>.s3-<region>.amazonaws.com/key/file
 // and returns the bucket, region, key, and filename
 func (d *Downloader) parseURI(keyString string) (string, string, string, string) {
-	var region string
-	ss := strings.Split(keyString, "/")
-	bucketSs := strings.Split(ss[2], ".")
-	bucket := bucketSs[0]
-	regionSs := strings.Split(bucketSs[1], "-")
+	uriComponents := URIRegex.FindStringSubmatch(keyString)
+	bucket := uriComponents[1]
 	// Default to us-east-1 if just <bucket>.s3.amazonaws.com is passed
-	if len(regionSs) == 1 {
+	region := uriComponents[2]
+	if len(region) == 0 {
 		region = "us-east-1"
-	} else {
-		region = strings.Join(regionSs[1:], "-")
 	}
-	key := strings.Join(ss[3:], "/")
-	filename := ss[len(ss)-1]
+	key := uriComponents[3]
+	filename := uriComponents[4]
 	return bucket, region, key, filename
 }
 

@@ -15,7 +15,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/zendesk/apt-s3/downloader"
+	"github.com/abrener5735/apt-s3/downloader"
 )
 
 type Method struct {
