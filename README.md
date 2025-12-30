@@ -59,7 +59,7 @@ To download a file using `apt-s3` simply use the `-download` flag. Run `apt-s3 -
 export BUCKET_NAME=my-s3-bucket
 export BUCKET_REGION=us-east-1
 
-apt-s3 -download s3:/${BUCKET_NAME}.s3-${BUCKET_REGION}.amazonaws.com/file -path /tmp/file
+apt-s3 -download s3://${BUCKET_NAME}.s3-${BUCKET_REGION}.amazonaws.com/file -path /tmp/file
 ```
 
 ## Building
