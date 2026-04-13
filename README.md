@@ -41,9 +41,35 @@ export BUCKET_REGION=us-east-1
 echo "deb s3://${BUCKET_NAME}.s3-${BUCKET_REGION}.amazonaws.com/ stable main" > /etc/apt/sources.list.d/s3bucket.list
 ```
 
+### Custom S3 Endpoints
+
+To use an S3-compatible endpoint (for example `https://storage.domain.com`), define it in an apt config file:
+
+```bash
+cat >/etc/apt/apt.conf.d/99apt-s3 <<'EOF'
+Acquire::s3::Endpoint "https://storage.domain.com";
+Acquire::s3::Region "eu-central-1";
+Acquire::s3::ForcePathStyle "true";
+EOF
+```
+
+Then you can use a source like:
+
+```bash
+echo "deb s3://apt-dev/ubuntu stable main" > /etc/apt/sources.list.d/s3bucket.list
+```
+
 ### Credentials
 
-`apt-s3` uses the [default credential provider chain](https://docs.aws.amazon.com/sdkref/latest/guide/standardized-credentials.html) to find valid AWS credentials.
+`apt-s3` checks `/etc/apt/s3creds` first (if present), then falls back to the [default credential provider chain](https://docs.aws.amazon.com/sdkref/latest/guide/standardized-credentials.html).
+
+`/etc/apt/s3creds` format:
+
+```ini
+aws_access_key_id = your-access-key-id
+aws_secret_access_key = your-secret-access-key
+aws_session_token = optional-session-token
+```
 
 ### Interactive Usage
 

@@ -14,6 +14,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/zendesk/apt-s3/downloader"
@@ -21,6 +22,7 @@ import (
 
 type Method struct {
 	Downloader *downloader.Downloader
+	s3Config   downloader.S3Config
 }
 
 func New(ctx context.Context) *Method {
@@ -83,15 +85,96 @@ func (m *Method) findLine(key string, lines []string) string {
 	return ""
 }
 
+func (m *Method) configFromLines(lines []string) (downloader.S3Config, error) {
+	cfg := downloader.S3Config{}
+
+	for _, line := range lines {
+		if !strings.HasPrefix(line, "Config-Item: ") {
+			continue
+		}
+
+		item := strings.TrimPrefix(line, "Config-Item: ")
+		itemParts := strings.SplitN(item, "=", 2)
+		if len(itemParts) != 2 {
+			continue
+		}
+
+		key := strings.ToLower(strings.TrimSpace(itemParts[0]))
+		value := normalizeConfigValue(itemParts[1])
+
+		switch key {
+		case "acquire::s3::endpoint", "acquire::s3::endpointurl":
+			cfg.EndpointURL = value
+		case "acquire::s3::region":
+			cfg.Region = value
+		case "acquire::s3::forcepathstyle":
+			usePathStyle, err := strconv.ParseBool(value)
+			if err != nil {
+				return cfg, err
+			}
+			cfg.ForcePathStyle = usePathStyle
+		}
+	}
+
+	return cfg, nil
+}
+
+func hasConfigItems(lines []string) bool {
+	for _, line := range lines {
+		if strings.HasPrefix(line, "Config-Item: ") {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (m *Method) applyConfig(lines []string) error {
+	if !hasConfigItems(lines) {
+		return nil
+	}
+
+	cfg, err := m.configFromLines(lines)
+	if err != nil {
+		return err
+	}
+
+	m.s3Config = cfg
+	return m.Downloader.Configure(cfg)
+}
+
+func normalizeConfigValue(raw string) string {
+	value := strings.TrimSpace(raw)
+
+	// apt may pass quoted Config-Item values (e.g. "\"true\"" or
+	// "\"https://storage.example.com\"").
+	if unquoted, err := strconv.Unquote(value); err == nil {
+		return strings.TrimSpace(unquoted)
+	}
+
+	if len(value) >= 2 {
+		if (value[0] == '"' && value[len(value)-1] == '"') || (value[0] == '\'' && value[len(value)-1] == '\'') {
+			return strings.TrimSpace(value[1 : len(value)-1])
+		}
+	}
+
+	return value
+}
+
 // UriStart downloads a file from S3 and tells apt about when the download
 // starts and is finished
 func (m *Method) UriStart(lines []string) error {
+	if err := m.applyConfig(lines); err != nil {
+		return err
+	}
+
 	uri := m.findLine("URI", lines)
 	path := m.findLine("Filename", lines)
 
 	lastModified, size, err := m.Downloader.GetFileAttributes(uri)
 	if err != nil {
 		m.handleError(uri, err)
+		return nil
 	}
 
 	fmt.Printf("200 URI Start\nLast-Modified: %s\nSize: %d\nURI: %s\n\n", lastModified, size, uri)
@@ -99,6 +182,7 @@ func (m *Method) UriStart(lines []string) error {
 	filename, err := m.Downloader.DownloadFile(uri, path)
 	if err != nil {
 		m.handleError(uri, err)
+		return nil
 	}
 	md5Hash, sha1Hash, sha256Hash, sha512Hash, err := m.calculateHashes(filename)
 	if err != nil {
@@ -116,7 +200,6 @@ func (m *Method) UriStart(lines []string) error {
 // understands
 func (m *Method) handleError(uri string, err error) {
 	fmt.Printf("400 URI Failure\nMessage: %s\nURI: %s\n\n", strings.TrimRight(fmt.Sprintln(err), "\n"), uri)
-	os.Exit(1)
 }
 
 // Start watches os.Stdin for a "600 URI Acquire" message from apt which
@@ -132,7 +215,11 @@ func (m *Method) Start() {
 			lines = append(lines, t)
 		} else {
 			if len(lines) > 0 {
-				if lines[0] == "600 URI Acquire" {
+				if lines[0] == "601 Configuration" {
+					if err := m.applyConfig(lines); err != nil {
+						m.handleError("", err)
+					}
+				} else if lines[0] == "600 URI Acquire" {
 					if err := m.UriStart(lines); err != nil {
 						m.handleError(strings.Split(lines[1], ": ")[1], err)
 					}
