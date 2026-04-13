@@ -47,7 +47,7 @@ func TestFindLine(t *testing.T) {
 
 func TestConfigFromLines(t *testing.T) {
 	lines := []string{
-		"Config-Item: Acquire::s3::Endpoint=https://storage.zigpos.com",
+		"Config-Item: Acquire::s3::Endpoint=https://storage.domain.com",
 		"Config-Item: Acquire::s3::Region=eu-central-1",
 		"Config-Item: Acquire::s3::ForcePathStyle=true",
 	}
@@ -58,8 +58,8 @@ func TestConfigFromLines(t *testing.T) {
 		t.Fatalf("configFromLines() unexpected error: %v", err)
 	}
 
-	if cfg.EndpointURL != "https://storage.zigpos.com" {
-		t.Errorf("configFromLines() EndpointURL = %s (expected https://storage.zigpos.com)", cfg.EndpointURL)
+	if cfg.EndpointURL != "https://storage.domain.com" {
+		t.Errorf("configFromLines() EndpointURL = %s (expected https://storage.domain.com)", cfg.EndpointURL)
 	}
 	if cfg.Region != "eu-central-1" {
 		t.Errorf("configFromLines() Region = %s (expected eu-central-1)", cfg.Region)
@@ -71,7 +71,7 @@ func TestConfigFromLines(t *testing.T) {
 
 func TestConfigFromLinesQuotedValues(t *testing.T) {
 	lines := []string{
-		"Config-Item: Acquire::s3::Endpoint=\"https://storage.zigpos.com\"",
+		"Config-Item: Acquire::s3::Endpoint=\"https://storage.domain.com\"",
 		"Config-Item: Acquire::s3::Region=\"eu-central-1\"",
 		"Config-Item: Acquire::s3::ForcePathStyle=\"true\"",
 	}
@@ -82,8 +82,8 @@ func TestConfigFromLinesQuotedValues(t *testing.T) {
 		t.Fatalf("configFromLines() unexpected error: %v", err)
 	}
 
-	if cfg.EndpointURL != "https://storage.zigpos.com" {
-		t.Errorf("configFromLines() EndpointURL = %s (expected https://storage.zigpos.com)", cfg.EndpointURL)
+	if cfg.EndpointURL != "https://storage.domain.com" {
+		t.Errorf("configFromLines() EndpointURL = %s (expected https://storage.domain.com)", cfg.EndpointURL)
 	}
 	if cfg.Region != "eu-central-1" {
 		t.Errorf("configFromLines() Region = %s (expected eu-central-1)", cfg.Region)
@@ -107,7 +107,7 @@ func TestConfigFromLinesInvalidBool(t *testing.T) {
 func TestApplyConfigFrom601Lines(t *testing.T) {
 	lines := []string{
 		"601 Configuration",
-		"Config-Item: Acquire::s3::Endpoint=https://storage.zigpos.com",
+		"Config-Item: Acquire::s3::Endpoint=https://storage.domain.com",
 		"Config-Item: Acquire::s3::Region=eu-central-1",
 		"Config-Item: Acquire::s3::ForcePathStyle=true",
 	}
@@ -117,8 +117,8 @@ func TestApplyConfigFrom601Lines(t *testing.T) {
 		t.Fatalf("applyConfig() unexpected error: %v", err)
 	}
 
-	if m.s3Config.EndpointURL != "https://storage.zigpos.com" {
-		t.Errorf("s3Config.EndpointURL = %s (expected https://storage.zigpos.com)", m.s3Config.EndpointURL)
+	if m.s3Config.EndpointURL != "https://storage.domain.com" {
+		t.Errorf("s3Config.EndpointURL = %s (expected https://storage.domain.com)", m.s3Config.EndpointURL)
 	}
 	if m.s3Config.Region != "eu-central-1" {
 		t.Errorf("s3Config.Region = %s (expected eu-central-1)", m.s3Config.Region)
@@ -136,7 +136,7 @@ func TestApplyConfigNoConfigItemsKeepsPrevious(t *testing.T) {
 
 	m := New(context.Background())
 	m.s3Config = downloader.S3Config{
-		EndpointURL:    "https://storage.zigpos.com",
+		EndpointURL:    "https://storage.domain.com",
 		Region:         "eu-central-1",
 		ForcePathStyle: true,
 	}
@@ -148,7 +148,7 @@ func TestApplyConfigNoConfigItemsKeepsPrevious(t *testing.T) {
 		t.Fatalf("applyConfig() unexpected error: %v", err)
 	}
 
-	if m.s3Config.EndpointURL != "https://storage.zigpos.com" {
+	if m.s3Config.EndpointURL != "https://storage.domain.com" {
 		t.Errorf("s3Config.EndpointURL changed to %s", m.s3Config.EndpointURL)
 	}
 	if m.s3Config.Region != "eu-central-1" {

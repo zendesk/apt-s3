@@ -33,7 +33,7 @@ func TestParseURI(t *testing.T) {
 			name: "custom endpoint via s3 scheme",
 			uri:  "s3://aptly-dev/ubuntu/dists/stable/InRelease",
 			cfg: S3Config{
-				EndpointURL:    "https://storage.zigpos.com",
+				EndpointURL:    "https://storage.domain.com",
 				Region:         "eu-central-1",
 				ForcePathStyle: true,
 			},
@@ -44,9 +44,9 @@ func TestParseURI(t *testing.T) {
 		},
 		{
 			name: "custom endpoint via https scheme",
-			uri:  "https://storage.zigpos.com/aptly-dev/ubuntu/dists/stable/InRelease",
+			uri:  "https://storage.domain.com/aptly-dev/ubuntu/dists/stable/InRelease",
 			cfg: S3Config{
-				EndpointURL:    "https://storage.zigpos.com",
+				EndpointURL:    "https://storage.domain.com",
 				Region:         "eu-central-1",
 				ForcePathStyle: true,
 			},
@@ -57,9 +57,9 @@ func TestParseURI(t *testing.T) {
 		},
 		{
 			name: "custom endpoint via s3 scheme using endpoint host",
-			uri:  "s3://storage.zigpos.com/aptly-dev/ubuntu/dists/stable/InRelease",
+			uri:  "s3://storage.domain.com/aptly-dev/ubuntu/dists/stable/InRelease",
 			cfg: S3Config{
-				EndpointURL:    "https://storage.zigpos.com",
+				EndpointURL:    "https://storage.domain.com",
 				Region:         "eu-central-1",
 				ForcePathStyle: true,
 			},
@@ -70,7 +70,7 @@ func TestParseURI(t *testing.T) {
 		},
 		{
 			name:    "https uri without endpoint config returns error",
-			uri:     "https://storage.zigpos.com/aptly-dev/ubuntu/dists/stable/InRelease",
+			uri:     "https://storage.domain.com/aptly-dev/ubuntu/dists/stable/InRelease",
 			wantErr: true,
 		},
 	}
